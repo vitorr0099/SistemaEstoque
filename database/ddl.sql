@@ -56,7 +56,3 @@ BEFORE UPDATE ON usuario
 FOR EACH ROW
 EXECUTE FUNCTION update_usuario_updated_at_column();
 
--- Dados de exemplo
-INSERT INTO produto (codigo, nome, quantidade, preco_unitario, localizacao, unidade_medida)
-VALUES 
-('00001', 'Luva', 35, 10.00, 'H57', 'UN');
