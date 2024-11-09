@@ -14,23 +14,35 @@ public class ProdutoService {
     @Autowired
     private ProdutoRepository produtoRepository;
 
-    // Lista todos os produtos
-    public List<Produto> listarTodos() {
+    public List<Produto> listarProdutos() {
         return produtoRepository.findAll();
     }
 
-    // Busca um produto por ID
-    public Optional<Produto> buscarPorId(Long id) {
-        return produtoRepository.findById(id);
+    public Produto obterProduto(Long id) {
+        Optional<Produto> produto = produtoRepository.findById(id);
+        return produto.orElse(null);
     }
 
-    // Salva um novo produto ou atualiza um existente
-    public Produto salvar(Produto produto) {
+    public Produto salvarProduto(Produto produto) {
         return produtoRepository.save(produto);
     }
 
-    // Exclui um produto por ID
-    public void excluir(Long id) {
+    public Produto atualizarProduto(Long id, Produto produtoAtualizado) {
+        Optional<Produto> produtoExistente = produtoRepository.findById(id);
+        if (produtoExistente.isPresent()) {
+            Produto produto = produtoExistente.get();
+            produto.setCodigo(produtoAtualizado.getCodigo());
+            produto.setNome(produtoAtualizado.getNome());
+            produto.setQuantidade(produtoAtualizado.getQuantidade());
+            produto.setPrecoUnitario(produtoAtualizado.getPrecoUnitario());
+            produto.setLocalizacao(produtoAtualizado.getLocalizacao());
+            produto.setUnidadeMedida(produtoAtualizado.getUnidadeMedida());
+            return produtoRepository.save(produto);
+        }
+        return null;
+    }
+
+    public void deletarProduto(Long id) {
         produtoRepository.deleteById(id);
     }
 }

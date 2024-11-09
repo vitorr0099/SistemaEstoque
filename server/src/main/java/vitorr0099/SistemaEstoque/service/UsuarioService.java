@@ -1,36 +1,59 @@
 package vitorr0099.SistemaEstoque.service;
 
-import vitorr0099.SistemaEstoque.model.Usuario;
-import vitorr0099.SistemaEstoque.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import vitorr0099.SistemaEstoque.model.Usuario;
+import vitorr0099.SistemaEstoque.repository.UsuarioRepository;
 
+import java.time.LocalDateTime; // Adicione essa linha
 import java.util.List;
 import java.util.Optional;
 
 @Service
 public class UsuarioService {
 
-    @Autowired
-    private UsuarioRepository usuarioRepository;
+    private final UsuarioRepository usuarioRepository;
 
-    // Lista todos os usuários
-    public List<Usuario> listarTodos() {
+    @Autowired
+    public UsuarioService(UsuarioRepository usuarioRepository) {
+        this.usuarioRepository = usuarioRepository;
+    }
+
+    // Método para listar todos os usuários
+    public List<Usuario> listarUsuarios() {
         return usuarioRepository.findAll();
     }
 
-    // Busca um usuário por ID
-    public Optional<Usuario> buscarPorId(Long id) {
+    // Método para buscar um usuário por ID
+    public Optional<Usuario> buscarUsuarioPorId(Long id) {
         return usuarioRepository.findById(id);
     }
 
-    // Salva um novo usuário ou atualiza um existente
-    public Usuario salvar(Usuario usuario) {
+    // Método para criar um novo usuário
+    public Usuario criarUsuario(Usuario usuario) {
+        usuario.setCreatedAt(LocalDateTime.now());
+        usuario.setUpdatedAt(LocalDateTime.now());
         return usuarioRepository.save(usuario);
     }
 
-    // Exclui um usuário por ID
-    public void excluir(Long id) {
+    // Método para atualizar um usuário existente
+    @Transactional
+    public Usuario atualizarUsuario(Long id, Usuario usuarioAtualizado) {
+        return usuarioRepository.findById(id)
+                .map(usuario -> {
+                    usuario.setUsername(usuarioAtualizado.getUsername());
+                    usuario.setSenha(usuarioAtualizado.getSenha());
+                    usuario.setNomeCompleto(usuarioAtualizado.getNomeCompleto());
+                    usuario.setAtivo(usuarioAtualizado.getAtivo());
+                    usuario.setUpdatedAt(LocalDateTime.now());
+                    return usuarioRepository.save(usuario);
+                })
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado com o ID: " + id));
+    }
+
+    // Método para deletar um usuário por ID
+    public void deletarUsuario(Long id) {
         usuarioRepository.deleteById(id);
     }
 }
