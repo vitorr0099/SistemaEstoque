@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Estoque</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        /* Reset CSS */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #e9ecef;
+            color: #333;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #003366;
+            color: white;
+            padding: 15px 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo i {
+            margin-right: 10px;
+            font-size: 1.8rem;
+            color: #ffc107;
+        }
+
+        .logo span {
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+        }
+
+        .user-profile span {
+            margin-right: 10px;
+            font-size: 1rem;
+        }
+
+        .user-profile i {
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+
+        .table-container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+        }
+
+        .search-bar {
+            width: 100%;
+            padding: 12px 15px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            font-size: 1rem;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #003366;
+            color: white;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        .btn {
+            padding: 8px 15px;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .btn-edit {
+            background-color: #28a745;
+        }
+
+        .btn-delete {
+            background-color: #dc3545;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        .add-button {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background-color: #003366;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 1.1rem;
+            text-align: center;
+        }
+
+        .add-button:hover {
+            background-color: #00509e;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.4);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 25px;
+            border-radius: 10px;
+            width: 500px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            animation: modal-open 0.3s ease;
+        }
+
+        @keyframes modal-open {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header h2 {
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+            color: #003366;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        .modal-footer button {
+            background-color: #003366;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .modal-footer button:hover {
+            background-color: #00509e;
+        }
+
+        .close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #333;
+        }
+
+        footer {
+            background-color: #333;
+            color: white;
+            text-align: center;
+            padding: 15px;
+            margin-top: auto;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="logo">
+        <i class="fas fa-box"></i>
+        <span>Sistema de Estoque</span>
+    </div>
+    <div class="user-profile">
+        <span>Usuário: João</span>
+        <i class="fas fa-sign-out-alt" onclick="logout()"></i>
+    </div>
+</header>
+
+<div class="table-container">
+    <input type="text" class="search-bar" placeholder="Pesquisar produto..." id="searchInput">
+
+    <table>
+        <thead>
+        <tr>
+            <th>Código</th>
+            <th>Produto</th>
+            <th>Qtd.</th>
+            <th>Preço Unitário</th>
+            <th>Localização</th>
+            <th>Uni. Medida</th>
+            <th>Ações</th>
+        </tr>
+        </thead>
+        <tbody id="productTable">
+        <!-- Produtos serão inseridos dinamicamente aqui -->
+        </tbody>
+    </table>
+
+    <a href="javascript:void(0)" class="add-button" onclick="openAddModal()">Adicionar Item</a>
+</div>
+
+<footer>
+    <p>&copy; 2024 Sistema de Controle de Estoque. Todos os direitos reservados.</p>
+</footer>
+
+<!-- Modal para adicionar ou editar produto -->
+<div id="productModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <div class="modal-header">
+            <h2>Adicionar/Editar Produto</h2>
+        </div>
+        <div>
+            <label for="productName">Nome do Produto:</label>
+            <input type="text" id="productName" style="width:100%; padding:8px; margin-top:5px; margin-bottom:10px;">
+        </div>
+        <div>
+            <label for="productQuantity">Quantidade:</label>
+            <input type="number" id="productQuantity" style="width:100%; padding:8px; margin-top:5px; margin-bottom:10px;">
+        </div>
+        <div>
+            <label for="productPrice">Preço Unitário:</label>
+            <input type="text" id="productPrice" style="width:100%; padding:8px; margin-top:5px; margin-bottom:10px;">
+        </div>
+        <div>
+            <label for="productLocation">Localização:</label>
+            <input type="text" id="productLocation" style="width:100%; padding:8px; margin-top:5px; margin-bottom:10px;">
+        </div>
+        <div>
+            <label for="productUnit">Uni. Medida:</label>
+            <input type="text" id="productUnit" style="width:100%; padding:8px; margin-top:5px; margin-bottom:10px;">
+        </div>
+        <div class="modal-footer">
+            <button onclick="saveProduct()">Salvar</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const apiUrl = 'http://localhost:8080/api/produtos';
+
+    // Função para carregar os produtos
+    function loadProducts() {
+        fetch(apiUrl)
+            .then(response => response.json())
+            .then(data => {
+                const tableBody = document.getElementById('productTable');
+                tableBody.innerHTML = '';
+                data.forEach(produto => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${produto.codigo}</td>
+                        <td>${produto.nome}</td>
+                        <td>${produto.quantidade}</td>
+                        <td>R$ ${produto.precoUnitario}</td>
+                        <td>${produto.localizacao}</td>
+                        <td>${produto.unidadeMedida}</td>
+                        <td>
+                            <button class="btn btn-edit" onclick="editProduct(${produto.codigo})">Editar</button>
+                            <button class="btn btn-delete" onclick="deleteProduct(${produto.codigo})">Excluir</button>
+                        </td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            });
+    }
+
+    // Exibir e ocultar modal
+    function openAddModal() {
+        document.getElementById('productModal').style.display = 'flex';
+    }
+
+    function closeModal() {
+        document.getElementById('productModal').style.display = 'none';
+    }
+
+    function saveProduct() {
+        // Lógica para salvar o produto
+        closeModal();
+    }
+
+    function logout() {
+        alert('Você será desconectado.');
+    }
+
+    document.addEventListener('DOMContentLoaded', loadProducts);
+</script>
+
+</body>
+</html>
