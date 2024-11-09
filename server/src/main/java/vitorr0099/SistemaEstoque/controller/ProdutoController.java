@@ -1,67 +1,75 @@
 package vitorr0099.SistemaEstoque.controller;
 
+import vitorr0099.SistemaEstoque.dto.ProdutoDTO;
 import vitorr0099.SistemaEstoque.model.Produto;
-import vitorr0099.SistemaEstoque.repository.ProdutoRepository;
+import vitorr0099.SistemaEstoque.service.ProdutoService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/produtos")
 public class ProdutoController {
 
     @Autowired
-    private ProdutoRepository produtoRepository;
+    private ProdutoService produtoService;
 
-    // Listar todos os produtos
+    // Converter Produto para ProdutoDTO
+    private ProdutoDTO convertToDto(Produto produto) {
+        return new ProdutoDTO(
+                produto.getId(),
+                produto.getCodigo(),
+                produto.getNome(),
+                produto.getQuantidade(),
+                produto.getPrecoUnitario(),
+                produto.getLocalizacao(),
+                produto.getUnidadeMedida()
+        );
+    }
+
+    // Converter ProdutoDTO para Produto
+    private Produto convertToEntity(ProdutoDTO produtoDTO) {
+        Produto produto = new Produto();
+        produto.setId(produtoDTO.getId());
+        produto.setCodigo(produtoDTO.getCodigo());
+        produto.setNome(produtoDTO.getNome());
+        produto.setQuantidade(produtoDTO.getQuantidade());
+        produto.setPrecoUnitario(produtoDTO.getPrecoUnitario());
+        produto.setLocalizacao(produtoDTO.getLocalizacao());
+        produto.setUnidadeMedida(produtoDTO.getUnidadeMedida());
+        return produto;
+    }
+
     @GetMapping
-    public List<Produto> listarProdutos() {
-        return produtoRepository.findAll();
+    public List<ProdutoDTO> listarProdutos() {
+        List<Produto> produtos = produtoService.listarProdutos();
+        return produtos.stream().map(this::convertToDto).collect(Collectors.toList());
     }
 
-    // Obter um produto por ID
     @GetMapping("/{id}")
-    public ResponseEntity<Produto> obterProduto(@PathVariable Long id) {
-        Optional<Produto> produto = produtoRepository.findById(id);
-        return produto.map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    public ProdutoDTO obterProduto(@PathVariable Long id) {
+        Produto produto = produtoService.obterProduto(id);
+        return convertToDto(produto);
     }
 
-    // Criar um novo produto
     @PostMapping
-    public ResponseEntity<Produto> criarProduto(@RequestBody Produto produto) {
-        Produto novoProduto = produtoRepository.save(produto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(novoProduto);
+    public ProdutoDTO adicionarProduto(@RequestBody ProdutoDTO produtoDTO) {
+        Produto produto = convertToEntity(produtoDTO);
+        Produto produtoSalvo = produtoService.salvarProduto(produto);
+        return convertToDto(produtoSalvo);
     }
 
-    // Atualizar um produto existente
     @PutMapping("/{id}")
-    public ResponseEntity<Produto> atualizarProduto(@PathVariable Long id, @RequestBody Produto produtoAtualizado) {
-        return produtoRepository.findById(id)
-                .map(produto -> {
-                    produto.setCodigo(produtoAtualizado.getCodigo());
-                    produto.setNome(produtoAtualizado.getNome());
-                    produto.setQuantidade(produtoAtualizado.getQuantidade());
-                    produto.setPrecoUnitario(produtoAtualizado.getPrecoUnitario());
-                    produto.setLocalizacao(produtoAtualizado.getLocalizacao());
-                    produto.setUnidadeMedida(produtoAtualizado.getUnidadeMedida());
-                    Produto produtoSalvo = produtoRepository.save(produto);
-                    return ResponseEntity.ok(produtoSalvo);
-                })
-                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    public ProdutoDTO atualizarProduto(@PathVariable Long id, @RequestBody ProdutoDTO produtoDTO) {
+        Produto produto = convertToEntity(produtoDTO);
+        Produto produtoAtualizado = produtoService.atualizarProduto(id, produto);
+        return convertToDto(produtoAtualizado);
     }
 
-    // Excluir um produto
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> excluirProduto(@PathVariable Long id) {
-        if (produtoRepository.existsById(id)) {
-            produtoRepository.deleteById(id);
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    public void deletarProduto(@PathVariable Long id) {
+        produtoService.deletarProduto(id);
     }
 }
