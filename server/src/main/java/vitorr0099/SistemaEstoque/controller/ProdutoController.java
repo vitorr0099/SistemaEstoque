@@ -5,6 +5,7 @@ import vitorr0099.SistemaEstoque.model.Produto;
 import vitorr0099.SistemaEstoque.service.ProdutoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -68,8 +69,14 @@ public class ProdutoController {
         return convertToDto(produtoAtualizado);
     }
 
-    @DeleteMapping("/{id}")
-    public void deletarProduto(@PathVariable Long id) {
-        produtoService.deletarProduto(id);
+    // Método para excluir produto
+    @DeleteMapping("/{codigo}")
+    public ResponseEntity<Void> deleteProduct(@PathVariable("codigo") Long id) {
+        boolean deleted = produtoService.deleteProduto(id);
+        if (deleted) {
+            return ResponseEntity.noContent().build(); // 204 No Content
+        } else {
+            return ResponseEntity.notFound().build(); // 404 Not Found
+        }
     }
 }

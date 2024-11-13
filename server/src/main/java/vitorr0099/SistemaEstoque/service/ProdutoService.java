@@ -42,7 +42,13 @@ public class ProdutoService {
         return null;
     }
 
-    public void deletarProduto(Long id) {
-        produtoRepository.deleteById(id);
+    // Método para excluir produto
+    public boolean deleteProduto(Long id) {
+        Optional<Produto> produtoOptional = produtoRepository.findById(id);
+        if (produtoOptional.isPresent()) {
+            produtoRepository.delete(produtoOptional.get());
+            return true;
+        }
+        return false;
     }
 }
