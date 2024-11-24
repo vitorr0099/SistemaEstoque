@@ -54,13 +54,17 @@ public class ProdutoController {
         Produto produto = produtoService.obterProduto(id);
         return convertToDto(produto);
     }
-
     @PostMapping
-    public ProdutoDTO adicionarProduto(@RequestBody ProdutoDTO produtoDTO) {
+    public ResponseEntity<ProdutoDTO> adicionarProduto(@RequestBody ProdutoDTO produtoDTO) {
+        if (produtoDTO.getCodigo() == null || produtoDTO.getCodigo().isEmpty()) {
+            return ResponseEntity.badRequest().body(null); // Retorne um erro se o código for inválido
+        }
+
         Produto produto = convertToEntity(produtoDTO);
         Produto produtoSalvo = produtoService.salvarProduto(produto);
-        return convertToDto(produtoSalvo);
+        return ResponseEntity.ok(convertToDto(produtoSalvo));
     }
+
 
     @PutMapping("/{id}")
     public ProdutoDTO atualizarProduto(@PathVariable Long id, @RequestBody ProdutoDTO produtoDTO) {
@@ -68,6 +72,9 @@ public class ProdutoController {
         Produto produtoAtualizado = produtoService.atualizarProduto(id, produto);
         return convertToDto(produtoAtualizado);
     }
+
+
+
 
     // Método para excluir produto
     @DeleteMapping("/{codigo}")

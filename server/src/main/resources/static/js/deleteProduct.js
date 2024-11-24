@@ -9,7 +9,7 @@ function deleteProduto(codigo) {
         .then(response => {
             if (response.ok) {
                 alert('Produto excluído com sucesso!');
-                // Recarregar os produtos para refletir a exclusão
+                // Recarregar os produtos para refletir a exclusão 
                 loadProducts();
             } else {
                 alert('Erro ao excluir o produto.');

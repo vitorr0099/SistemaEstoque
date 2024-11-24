@@ -273,6 +273,10 @@
             <h2>Adicionar/Editar Produto</h2>
         </div>
         <div>
+            <label for="productCode">Código do Produto:</label>
+            <input type="text" id="productCode" style="width:100%; padding:8px; margin-top:5px; margin-bottom:10px;">
+        </div>
+        <div>
             <label for="productName">Nome do Produto:</label>
             <input type="text" id="productName" style="width:100%; padding:8px; margin-top:5px; margin-bottom:10px;">
         </div>
@@ -300,21 +304,22 @@
 
 <script>
     const apiUrl = 'http://localhost:8080/api/produtos';
+    let currentProductId = null;
 
     // Função para carregar os produtos
     function loadProducts() {
         fetch(apiUrl)
             .then(response => response.json())
             .then(data => {
-                const tableBody = document.getElementById('productTable');
-                tableBody.innerHTML = '';
+                const productTable = document.getElementById('productTable');
+                productTable.innerHTML = '';
                 data.forEach(produto => {
                     const row = document.createElement('tr');
                     row.innerHTML = `
                         <td>${produto.codigo}</td>
                         <td>${produto.nome}</td>
                         <td>${produto.quantidade}</td>
-                        <td>R$ ${produto.precoUnitario}</td>
+                        <td>R$ ${produto.precoUnitario.toFixed(2)}</td>
                         <td>${produto.localizacao}</td>
                         <td>${produto.unidadeMedida}</td>
                         <td>
@@ -322,53 +327,90 @@
                             <button class="btn btn-delete" onclick="deleteProduct(${produto.codigo})">Excluir</button>
                         </td>
                     `;
-                    tableBody.appendChild(row);
+                    productTable.appendChild(row);
                 });
             });
     }
 
-
- // Função para excluir um produto
-    function deleteProduct(codigo) {
-        // Confirmar antes de excluir
-        if (confirm('Tem certeza de que deseja excluir este produto?')) {
-            fetch(`${apiUrl}/${codigo}`, {
-                method: 'DELETE',
-            })
-            .then(response => {
-                if (response.ok) {
-                    alert('Produto excluído com sucesso!');
-                    loadProducts();  // Recarregar a lista de produtos após exclusão
-                } else {
-                    alert('Erro ao excluir o produto.');
-                }
-            })
-            .catch(error => {
-                alert('Erro na comunicação com o servidor.');
-                console.error(error);
-            });
-        }
-    }
-    // Exibir e ocultar modal
+    // Função para abrir o modal para adicionar um novo produto
     function openAddModal() {
+        currentProductId = null;
+        document.getElementById('productCode').value = '';
+        document.getElementById('productName').value = '';
+        document.getElementById('productQuantity').value = '';
+        document.getElementById('productPrice').value = '';
+        document.getElementById('productLocation').value = '';
+        document.getElementById('productUnit').value = '';
         document.getElementById('productModal').style.display = 'flex';
     }
 
+    // Função para abrir o modal de edição com os dados do produto
+    function editProduct(id) {
+        fetch(`${apiUrl}/${id}`)
+            .then(response => response.json())
+            .then(produto => {
+                currentProductId = id;
+                document.getElementById('productCode').value = produto.codigo;
+                document.getElementById('productName').value = produto.nome;
+                document.getElementById('productQuantity').value = produto.quantidade;
+                document.getElementById('productPrice').value = produto.precoUnitario;
+                document.getElementById('productLocation').value = produto.localizacao;
+                document.getElementById('productUnit').value = produto.unidadeMedida;
+                document.getElementById('productModal').style.display = 'flex';
+            });
+    }
+
+    // Função para salvar o produto
+    function saveProduct() {
+        const codigo = document.getElementById('productCode').value;
+        const nome = document.getElementById('productName').value;
+        const quantidade = document.getElementById('productQuantity').value;
+        const precoUnitario = parseFloat(document.getElementById('productPrice').value);
+        const localizacao = document.getElementById('productLocation').value;
+        const unidadeMedida = document.getElementById('productUnit').value;
+
+        const produto = { codigo, nome, quantidade, precoUnitario, localizacao, unidadeMedida };
+
+        const method = currentProductId ? 'PUT' : 'POST';
+        const url = currentProductId ? `${apiUrl}/${currentProductId}` : apiUrl;
+
+        fetch(url, {
+            method,
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(produto)
+        })
+        .then(response => {
+            if (response.ok) {
+                closeModal();
+                loadProducts();
+            } else {
+                alert('Erro ao salvar o produto.');
+            }
+        });
+    }
+
+    // Função para fechar o modal
     function closeModal() {
         document.getElementById('productModal').style.display = 'none';
     }
 
-    function saveProduct() {
-        // Lógica para salvar o produto
-        closeModal();
+    // Função para excluir um produto
+    function deleteProduct(id) {
+        if (confirm('Tem certeza que deseja excluir este produto?')) {
+            fetch(`${apiUrl}/${id}`, { method: 'DELETE' })
+                .then(response => {
+                    if (response.ok) {
+                        loadProducts();
+                    } else {
+                        alert('Erro ao excluir o produto.');
+                    }
+                });
+        }
     }
 
-    function logout() {
-        alert('Você será desconectado.');
-    }
-
-    document.addEventListener('DOMContentLoaded', loadProducts);
+    loadProducts();
 </script>
-
 </body>
 </html>
