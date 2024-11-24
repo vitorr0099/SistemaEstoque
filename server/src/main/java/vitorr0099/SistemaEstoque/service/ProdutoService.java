@@ -14,8 +14,12 @@ public class ProdutoService {
     @Autowired
     private ProdutoRepository produtoRepository;
 
-    public List<Produto> listarProdutos() {
-        return produtoRepository.findAll();
+    public List<Produto> listarProdutos(String search) {
+        if (search.isEmpty()) {
+            return produtoRepository.findAll(); // Retorna todos os produtos caso não haja pesquisa
+        } else {
+            return produtoRepository.findByNomeContainingIgnoreCaseOrCodigoContainingIgnoreCase(search, search); // Realiza a pesquisa
+        }
     }
 
     public Produto obterProduto(Long id) {

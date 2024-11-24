@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/produtos")
@@ -44,9 +43,11 @@ public class ProdutoController {
     }
 
     @GetMapping
-    public List<ProdutoDTO> listarProdutos() {
-        List<Produto> produtos = produtoService.listarProdutos();
-        return produtos.stream().map(this::convertToDto).collect(Collectors.toList());
+    public List<Produto> listarProdutos(@RequestParam(value = "search", defaultValue = "") String search) {
+        List<Produto> produtos = produtoService.listarProdutos(search);
+
+        return produtoService.listarProdutos(search);
+
     }
 
     @GetMapping("/{id}")
